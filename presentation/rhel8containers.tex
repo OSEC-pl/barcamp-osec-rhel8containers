@@ -1,0 +1,296 @@
+\documentclass[dvipsnames,table]{beamer}
+\usepackage{polski}
+
+\usetheme{Rochester}
+\usecolortheme{orchid}
+
+\usepackage{listings}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage{wasysym}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{tikzsymbols}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+\setbeamerfont{caption}{size=\scriptsize}
+\setbeamercolor{framenote}{bg=OSEC-red!25}
+\setbeamercolor{rednote}{bg=Red!25}
+\setbeamercolor{palette primary}{use=structure,fg=white,bg=OSEC-red}
+\setbeamercolor{palette secondary}{use=structure,fg=white,bg=OSEC-red2}
+
+\setbeamertemplate{itemize item}{\scriptsize\raise1pt\hbox{\donotcoloroutermaths$\blacktriangleright$}}
+\setbeamertemplate{itemize subitem}{\tiny\raise1pt\hbox{\donotcoloroutermaths$\bullet$}}
+\setbeamertemplate{itemize subsubitem}{\tiny\raise1pt\hbox{\donotcoloroutermaths{--}}}
+
+\setbeamertemplate{enumerate item}{\insertenumlabel.}
+\setbeamertemplate{enumerate subitem}{\insertenumlabel.\insertsubenumlabel}
+\setbeamertemplate{enumerate subsubitem}{\insertenumlabel.\insertsubenumlabel.\insertsubsubenumlabel}
+\setbeamertemplate{enumerate mini template}{\insertenumlabel}
+
+\setbeamercolor{itemize item}{fg=OSEC-red, bg=OSEC-red}
+\setbeamercolor{itemize subitem}{fg=OSEC-red, bg=OSEC-red}
+\setbeamercolor{itemize subsubitem}{fg=OSEC-red, bg=OSEC-red}
+
+\setbeamercolor{section number projected}{fg=white,bg=OSEC-red}
+\setbeamercolor{subsection number projected}{fg=white,bg=OSEC-red}
+\setbeamercolor{button}{bg=OSEC-red,fg=white}
+
+\setbeamertemplate{section in toc}[circle]
+\setbeamertemplate{subsection in toc}[square]
+
+\definecolor{OSEC-red}{RGB}{160,29,44}
+\definecolor{OSEC-red2}{RGB}{177,76,12}
+\hypersetup{colorlinks=true,linkcolor=white,urlcolor=OSEC-red}
+
+\setlength{\tabcolsep}{8pt}
+\renewcommand{\arraystretch}{1.2}
+
+\newcommand{\tri}{$\triangleright$ }
+
+
+\newcommand\YAMLcolonstyle{\color{red}\mdseries}
+\newcommand\YAMLkeystyle{\color{black}\bfseries}
+\newcommand\YAMLvaluestyle{\color{black}\mdseries}
+
+\makeatletter
+
+\newcommand\language@yaml{yaml}
+
+\expandafter\expandafter\expandafter\lstdefinelanguage
+\expandafter{\language@yaml}
+{
+  keywords={true,false,null,y,n},
+  keywordstyle=\color{darkgray}\bfseries,
+  basicstyle=\YAMLkeystyle,                                 % assuming a key comes first
+  sensitive=false,
+  comment=[l]{\#},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\YAMLvaluestyle\ttfamily,
+  moredelim=[l][\color{orange}]{\&},
+  moredelim=[l][\color{magenta}]{*},
+  moredelim=**[il][\YAMLcolonstyle{:}\YAMLvaluestyle]{:},   % switch to value style at :
+  morestring=[b]',
+  morestring=[b]",
+  literate =    {---}{{\ProcessThreeDashes}}3
+                {>}{{\textcolor{red}\textgreater}}1     
+                {|}{{\textcolor{red}\textbar}}1 
+                {\ -\ }{{\mdseries\ -\ }}3,
+}
+
+% switch to key style at EOL
+\lst@AddToHook{EveryLine}{\ifx\lst@language\language@yaml\YAMLkeystyle\fi}
+\makeatother
+
+\newcommand\ProcessThreeDashes{\llap{\color{cyan}\mdseries-{-}-}}
+
+\lstdefinestyle{yaml}
+{
+   language=yaml,
+   basicstyle=\small\ttfamily,
+   breaklines=true,
+%   escapechar=\@,
+}
+\lstdefinestyle{bash}
+{
+   language=bash,
+   basicstyle=\tiny\ttfamily,
+   breaklines=true,
+%   escapechar=\@,
+}
+\lstdefinestyle{cfg}
+{
+   basicstyle=\small\ttfamily,
+   breaklines=true,
+}
+
+\title{Konteneryzacja w Red Hat Enterprise Linux 8}
+\author{Radosław Kujawa -- radoslaw.kujawa@osec.pl}
+\institute{OSEC}
+
+\begin{document}
+
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{RHEL 8 a kontenery}
+\begin{center}
+\includegraphics[scale=0.1]{img-rhlogo.png}
+\end{center}
+\begin{itemize}
+	\item 8 Maja 2019 -- Red Hat Enterprise Linux 8
+\end{itemize}
+\begin{center}
+\end{center}
+\end{frame}
+
+% UBI
+
+\begin{frame}
+\frametitle{YUM v4 (dnf)}
+\begin{itemize}
+%	\item Dandified YUM, microdnf
+%	\item Modularyzacja systemu
+%	\item {\em Application Streams} -- odpowiedź na potrzeby twórców aplikacji, aby dostarczać wspierane alternatywne wersje oprogramowania
+	\item Wiele niezależnych od siebie wersji oprogramowania w ramach jednej dystrybucji OS
+	\item Zachowanie kompatybilności na poziomie API i ABI w ramach konkretnej wersji strumienia
+	\item Budowanie paczek zgodnie z ideologią SCL w dalszym ciągu obsługiwane
+	\item Modularyzacja dotyczy nie tylko usług ale też języków programowania i frameworków
+	\item Pojawią się strumienie z nowszymi wersjami paczek w ramach życia RHEL 8 (np. php)
+	\item Indywidualny czas \href{https://access.redhat.com/node/4079021}{wspierania} każdego strumienia
+	\item System bazowy dalej objęty \href{https://access.redhat.com/support/policy/updates/errata}{10-letnim wsparciem} (+ ELS)
+\end{itemize}
+\begin{center}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{YUM v4 (dnf)}
+\begin{itemize}
+	\item Usługi dostępne w alternatywnych wersjach
+	\item Np. PostgreSQL 9.6 oraz 10
+	\item Np. MariaDB 10.3 oraz MySQL 8
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{YUM v4 (dnf)}
+\begin{itemize}
+	\item {\tt dnf module enable postgresql:10}
+	\item {\tt dnf module install postgresql:10}
+\end{itemize}
+\lstinputlisting[style=yaml]{../ansible/deploy-modular-postgresql.yml}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Nowe narzędzia do konteneryzacji}
+\begin{itemize}
+	\item RHEL 8 nie dostarcza Dockera
+	\item Container tools -- {\tt podman}, {\tt buildah}, {\tt skopeo}
+	\item Silnik dla instalacji lokalnych, developmentu: podman
+	\item Silnik dla dużej skali (Kubernetes, OpenShift): \href{https://cri-o.io/}{CRI-O}
+	\item Red Hat Universal Base Images (UBI)
+	\item {\tt udica} -- generator polityk SELinuxa dla kontenerów (RHEL 8.1)
+% ipvlan w kontenerach
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{podman}
+	\begin{itemize}
+		\item Nowoczesne narzędzie do zarządznia lokalnymi kontenerami
+		\item W pełni wspierany, to nie jest {\em tech preview}!
+		\item Bardzo intensywny rozwój
+		\item Prostota konfiguracji, brak daemonów
+		\item Kontenery działające na kontach użytkowników nieuprzywilejowanych
+		\item Dobra integracja z systemd
+		\item Ułatwienie migracji do Kubernetesa ({\tt podman generate kube, podman play kube})
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{{\tt podman} -- integracja z {\tt systemd}}
+	\begin{itemize}
+		\item Kontenery {\tt podman} mogą działać jako usługi {\tt systemd}
+		\item Także na koncie nieuprzywilejowanego użytkownika
+		\item {\tt ExecStart} może uruchamiać pojedyńczy kontener lub wykonywać {\tt play kube}
+		\item Mechanizm {\em socket activation} w połączeniu z kontenerami
+	\end{itemize}
+%\begin{lstlisting}[style=cfg]
+\lstinputlisting[style=cfg]{../podman-systemd/mycontainer.service}
+% or stunnelized stdio
+\end{frame}
+
+\begin{frame}
+	\frametitle{Kompatybilność wsteczna z Docker}
+	\begin{itemize}
+		\item Paczka {\tt podman-docker} dostarcza polecenie {\tt docker}
+		\item Implementacja Open Container Initiative (OCI) Runtime Specification -- obrazy zbudowane w RHEL container tools działają z Dockerem i na odwrót
+%\footnote{Zazwyczaj\ldots}
+		\item {\tt podman} nie stara się implementować API Dockera - jest oparty o własną bibliotekę {\tt libpod}
+	\end{itemize}
+\centering
+	\begin{table}
+\caption{Docker vs podman compatibility vs container tools native.}
+\label{porownanie}
+\scriptsize
+\begin{tabular}{llll}
+\hline
+docker & rhel 8 compat & rhel 8 native   \\ \hline
+	docker run & podman run & podman run \\
+	docker build & podman build & buildah  \\
+	docker pull & podman pull & skopeo copy \\ 
+	\ldots & \ldots & \ldots \\ \hline
+\end{tabular}
+\normalsize
+\end{table}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Instalacja narzędzi do konteneryzacji za pomocą Ansible}
+	\lstinputlisting[style=yaml,lastline=11]{../ansible/deploy-container-tools.yml}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Instalacja narzędzi do konteneryzacji za pomocą Ansible}
+	\lstinputlisting[style=yaml,firstline=12]{../ansible/deploy-container-tools.yml}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Budowanie kontenera za pomocą {\tt buildah}}
+\lstinputlisting[style=bash]{../buildah-example/build-container.sh}
+\begin{itemize}
+	\item {\tt mkdir -p \$HOME/tmp/logs}
+	\item {\tt sudo chcon -t container\_file\_t \$HOME/tmp/logs}
+	\item {\tt podman run -p 7777:7777 -v \$HOME/tmp/logs/:/logs/ localhost/bcaas}
+	\item {\tt -p} dla nieuprzywilejowanych kontenerów -- libpod issue \href{https://github.com/containers/libpod/issues/2081}{2081}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Budowanie obrazu kontenera za pomocą Ansible}
+%	\lstinputlisting[style=yaml]{../ansible/}
+\begin{itemize}
+	\item {\tt ansible-bender} vs {\tt ansible-container}?
+	\item {\tt ansible-bedner} nie jest jeszcze dostępny jako paczka systemowa -- jest w {\tt pip} i na GitHub
+	\item {\tt ansible-bender build container-provisioning.yml}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Instalacja {\tt ansible-bender}}
+\begin{center}
+\includegraphics[scale=0.13]{img-ansibleinception.jpg}
+\end{center}
+\lstinputlisting[style=yaml,firstline=1,lastline=10]{../ansible/deploy-ansible-bender.yml}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Instalacja {\tt ansible-bender}}
+\lstinputlisting[style=yaml,firstline=11]{../ansible/deploy-ansible-bender.yml}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Tworzenie obrazów kontenerów z {\tt ansible-bender}}
+\lstinputlisting[style=yaml]{../ansible/container-provisioning.yml}
+\end{frame}
+
+\begin{frame}
+\frametitle{Koniec\ldots}
+\begin{center}
+\href{https://github.com/OSEC-pl/barcamp-osec-rhel8containers}{https://github.com/OSEC-pl/barcamp-osec-rhel8containers}
+\includegraphics[scale=0.5]{img-oseclogo.png}
+
+Dziękuje!
+
+Czy są pytania?
+
+\end{center}
+\end{frame}
+\end{document}
+
