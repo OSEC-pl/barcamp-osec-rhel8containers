@@ -136,88 +136,60 @@
 
 \begin{frame}
 \frametitle{RHEL 8 a kontenery}
-\begin{center}
-\includegraphics[scale=0.1]{img-rhlogo.png}
-\end{center}
-\begin{itemize}
-	\item 8 Maja 2019 -- Red Hat Enterprise Linux 8
-	\item Gdzie jest Docker?!
-\end{itemize}
-\begin{center}
-\end{center}
+	\begin{itemize}
+		\item State of affairs 2019 -- konteneryzujmy wszystko niezależnie od tego, czy jest to uzasadnione, czy nie
+	\end{itemize}
+	\begin{center}
+		\includegraphics[scale=0.1]{img-rhlogo.png}
+	\end{center}
+	\begin{itemize}
+		\item 8 Maja 2019 -- Red Hat Enterprise Linux 8
+		\item Gdzie jest Docker?!
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Docker GTFO}
 	\begin{itemize}
-		\item Docker jest zły i wszyscy powinniście czuć się źle\footcite{Barcamp2016}
+		\item Udokumentowana historia problemów bezpieczeństwa
+		\item Docker jest zły i wszyscy powinniście czuć się z nim źle\footcite{Barcamp2016}
+		\item Historycznie kontenery Docker działają w uprzywilejowanym namespace
+		\item {\it Security-as-an-Afterthought}
+		\begin{itemize}
+			\item CVE-2019-5736 lulz (btw. SELinux jak zawsze pomaga)
+		\end{itemize}
+		\item Architektura Dockera czyni go z definicji trudnym do zabezpieczenia
+		\item Niezrozumienie tego, czym Docker jest wśród developerów
+		\item Koszmary bezpieczeństwa, np. kontenery z uprawnieniami {\tt root}, {\tt CAP\_SYS\_ADMIN}, montowanie socketu Dockera wewnątrz kontenera
+		\item Włamanie do DockerHuba
+		\item AlpineLinux z pustym hasłem roota
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Więcej problemów z Dockerem}
+	\frametitle{Problemy innego rodzaju}
 	\begin{itemize}
-		\item Docker ,,standardem'' ?
+		\item Docker ,,standardem''? ,,Kontenery Dockerowe''
+		\item rkt, LXC, systemd-nspawn?
+		\item Podział Docker EE/Docker CE/Moby
+		\item Moby -- upstream jednego vendora?
 	\end{itemize}
-\end{frame}
-
-\begin{frame}
-	\begin{itemize}
-		\item Odpowiedź środowiska: projekt container tools \url{https://github.com/containers} 
-	\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{YUM v4 (dnf)}
-\begin{itemize}
-	\item microdnf -- reimplementacja {\tt dnf} o małych wymaganiach
-%	\item Modularyzacja systemu
-	\item {\em Application Streams} -- odpowiedź na potrzeby twórców aplikacji, aby dostarczać wspierane alternatywne wersje oprogramowania
-	\item Ułatwia budowę kontenerów z konkretną wersją oprogramowania
-	\item Pojawią się strumienie z nowszymi wersjami paczek w ramach życia RHEL 8 (np. php)
-	\item Budowanie paczek zgodnie z ideologią SCL w dalszym ciągu obsługiwane
-\end{itemize}
-\begin{center}
-\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{YUM v4 (dnf)}
-\begin{itemize}
-	\item Usługi dostępne w alternatywnych wersjach
-	\item Np. PostgreSQL 9.6 oraz 10
-	\item Np. MariaDB 10.3 oraz MySQL 8
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{YUM v4 (dnf)}
-\begin{itemize}
-	\item {\tt dnf module enable postgresql:10}
-	\item {\tt dnf module install postgresql:10}
-\end{itemize}
-%\lstinputlisting[style=yaml]{../ansible/deploy-modular-postgresql.yml}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Nowe narzędzia do konteneryzacji}
 \begin{itemize}
+	\item Odpowiedź środowiska: projekt container tools \url{https://github.com/containers} 
 	\item RHEL 8 nie dostarcza Dockera
 	\item Container tools -- {\tt podman}, {\tt buildah}, {\tt skopeo}
-	\item Silnik dla instalacji lokalnych, developmentu: podman
+	\item Silnik dla kontenerów lokalnych, developmentu: podman
 	\item Silnik dla dużej skali (Kubernetes, OpenShift): \href{https://cri-o.io/}{CRI-O}
-	\item {\tt udica} -- generator polityk SELinuxa dla kontenerów (RHEL 8.1)
+	\item {\tt udica} -- generator polityki SELinuxa dla kontenerów (Fedora już, RHEL 8.1+) {\it AMAZING}
+
 % ipvlan w kontenerach
 \end{itemize}
 \end{frame}
 
-\begin{frame}
-	\frametitle{UBI}
-	\begin{itemize}
-		\item Foo
-		\item {\tt podman run --rm -it ubi8/ubi /usr/bin/cat /etc/redhat-release}
-	\end{itemize}
-\end{frame}
 
 \begin{frame}
 	\frametitle{podman}
@@ -290,6 +262,47 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 	\item {\tt podman run -p 7777:7777 -v \$HOME/tmp/logs/:/logs/ localhost/bcaas}
 	\item {\tt -p} dla nieuprzywilejowanych kontenerów -- libpod issue \href{https://github.com/containers/libpod/issues/2081}{2081}
 \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{YUM v4 (dnf) a kontenery}
+\begin{itemize}
+	\item microdnf -- reimplementacja {\tt dnf} o małych wymaganiach, idealna do kontenerów
+%	\item Modularyzacja systemu
+	\item {\em Application Streams} -- odpowiedź na potrzeby twórców aplikacji, aby dostarczać wspierane alternatywne wersje oprogramowania
+	\item Ułatwia budowę kontenerów z konkretną wersją oprogramowania
+	\item Pojawią się strumienie z nowszymi wersjami paczek w ramach życia RHEL 8 (np. php)
+	\item Budowanie paczek zgodnie z ideologią SCL w dalszym ciągu obsługiwane
+\end{itemize}
+\begin{center}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{YUM v4 (dnf)}
+\begin{itemize}
+	\item Usługi dostępne w alternatywnych wersjach
+	\item Np. PostgreSQL 9.6 oraz 10
+	\item Np. MariaDB 10.3 oraz MySQL 8
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{YUM v4 (dnf)}
+\begin{itemize}
+	\item {\tt dnf module enable postgresql:10}
+	\item {\tt dnf module install postgresql:10}
+\end{itemize}
+%\lstinputlisting[style=yaml]{../ansible/deploy-modular-postgresql.yml}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{UBI}
+	\begin{itemize}
+		\item Foo
+		\item {\tt podman run --rm -it ubi8/ubi /usr/bin/cat /etc/redhat-release}
+	\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
