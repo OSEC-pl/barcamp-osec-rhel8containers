@@ -1,5 +1,5 @@
 ---
-- name: Install unprivileged ansible-bender and example playbooks
+- name: Install unprivileged ansible-bender
   become: false
   hosts: servers
   tasks:

@@ -126,6 +126,8 @@
 \title{Konteneryzacja w Red Hat Enterprise Linux 8}
 \author{Radosław Kujawa -- radoslaw.kujawa@osec.pl}
 \institute{OSEC}
+% XXX
+\date{} 
 
 \begin{document}
 
@@ -285,7 +287,7 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 		\item {\tt mkdir -p \$HOME/tmp/logs}
 		\item {\tt sudo chcon -t container\_file\_t \$HOME/tmp/logs}
 		\item {\tt podman run -p 7777:7777 -v \$HOME/tmp/logs/:/logs/ localhost/bcaas}
-		\item {\tt -p} dla nieuprzywilejowanych kontenerów -- libpod issue \href{https://github.com/containers/libpod/issues/2081}{2081}
+		\item {\tt -p} dla nieuprzywilejowanych kontenerów -- libpod issue \href{https://github.com/containers/libpod/issues/2081}{2081} ({\tt podman 1.1+}), workaround {\tt --net=host}
 	\end{itemize}
 \end{frame}
 
@@ -368,6 +370,7 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 %	\lstinputlisting[style=yaml]{../ansible/}
 \begin{itemize}
 	\item {\tt ansible-bender} vs {\tt ansible-container}?
+	\item W {\tt ansible-bender} piszemy playbooka tak jak gdybyśmy konfigurowali standardowy system operacyjny
 	\item {\tt ansible-bedner} nie jest jeszcze dostępny jako paczka systemowa -- jest w {\tt pip} i na GitHub
 	\item {\tt ansible-bender build container-provisioning.yml}
 \end{itemize}
@@ -389,7 +392,7 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 
 \begin{frame}[fragile]
 	\frametitle{Instalacja {\tt ansible-bender}}
-	\lstinputlisting[style=yaml,firstline=11]{../ansible/deploy-ansible-bender.yml}
+	\lstinputlisting[style=yaml]{../ansible/deploy-ansible-bender.yml}
 \end{frame}
 
 \begin{frame}[fragile]
