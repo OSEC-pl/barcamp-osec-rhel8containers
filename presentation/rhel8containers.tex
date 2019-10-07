@@ -148,20 +148,34 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Docker GTFO}
+	\frametitle{Docker, Docker, Docker, Docker!}
 	\begin{itemize}
 		\item Docker jest zły i wszyscy powinniście czuć się z nim źle\footcite{Barcamp2016}
-		\item Udokumentowana historia problemów bezpieczeństwa
-		\item Historycznie kontenery Docker działają w uprzywilejowanym namespace
 		\item {\it Security-as-an-Afterthought}
-		\begin{itemize}
-			\item CVE-2019-5736 lulz (btw. SELinux pomaga)
-		\end{itemize}
+		\item Historycznie kontenery Docker działają w uprzywilejowanym namespace
 		\item Architektura Dockera czyni go z definicji trudnym do zabezpieczenia
-		\item Niezrozumienie tego, czym Docker jest wśród developerów
-		\item Koszmary bezpieczeństwa, np. kontenery z uprawnieniami {\tt root}, {\tt CAP\_SYS\_ADMIN}, montowanie socketu Dockera wewnątrz kontenera
-		\item Włamanie do DockerHuba
-		\item AlpineLinux z pustym hasłem roota
+		\item Niezrozumienie wśród developerów -- Docker NIE jest mechanizmem bezpieczeństwa
+		\item SELinux rozwiązuje część problemów ale za rzadko stosowany
+	\end{itemize}
+	\begin{center}
+		\includegraphics[scale=0.09]{img-facepalm.jpg}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{(Nie)bezpieczeństwo Dockera}
+	\begin{itemize}
+		\item Udokumentowana historia problemów bezpieczeństwa
+		\item CVE-2019-5736 -- Docker Container Escape (btw. SELinux pomaga)
+		\item Włamanie do DockerHuba, AlpineLinux z pustym hasłem roota
+		\item Koszmary bezpieczeństwa -- ignorancja i złe praktyki
+		\begin{itemize}
+			\item Kontenery z uprawnieniami {\tt root}, {\tt CAP\_SYS\_ADMIN}
+			\item Montowanie socketu Dockera wewnątrz kontenera
+			\item Dostęp przez użytkowników nieuprzywilejowanych do socketu Dockera na hoście
+			\item Brak polityki aktualizacji bazowych komponetnów OS wewnątrz kontenerów
+		\end{itemize}
+
 	\end{itemize}
 \end{frame}
 
@@ -172,6 +186,7 @@
 		\item rkt, LXC, systemd-nspawn?
 		\item Podział Docker EE/Docker CE/Moby
 		\item Moby -- upstream jednego vendora?
+		\item Red Hat -- w RHEL 7 Docker ciągle patchowany (stabilność, bezpieczeństwo)
 	\end{itemize}
 \end{frame}
 
@@ -179,9 +194,19 @@
 	\frametitle{Nowe narzędzia do konteneryzacji}
 	\begin{itemize}
 		\item Odpowiedź Red Hat, SuSE, IBM, Intel: projekt container tools \url{https://github.com/containers} 
-		\item Konsekwencja: RHEL 8 nie dostarcza Dockera
 		\item Container tools -- {\tt podman}, {\tt buildah}, {\tt skopeo} (ale nie tylko)
 \end{itemize}
+	\begin{center}
+		\includegraphics[scale=0.20]{img-commandos.png}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{RHEL 8?}
+	\begin{itemize}
+		\item Konsekwencja: RHEL 8 nie dostarcza Dockera
+		\item Zastanów się 50 razy zanim zainstalujesz Docker CE -- mamy nowe narzędzia
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -198,7 +223,6 @@
 	\begin{itemize}
 		\item Narzędzie do zarządznia lokalnymi kontenerami
 		\item W pełni wspierany, to nie jest {\em tech preview}!
-		\item Bardzo intensywny rozwój
 		\item Prostota konfiguracji, brak daemonów
 		\item User namespaces -- kontenery na kontach użytkowników nieuprzywilejowanych
 		\item Dobra integracja z systemd
@@ -212,7 +236,7 @@
 	\frametitle{{\tt podman} -- integracja z {\tt systemd}}
 	\begin{itemize}
 		\item Kontenery {\tt podman} mogą działać jako usługi {\tt systemd}
-		\item Także na koncie nieuprzywilejowanego użytkownika
+		\item Także na koncie nieuprzywilejowanego użytkownika, w jego instancji systemd
 		\item {\tt ExecStart} może uruchamiać pojedyńczy kontener lub wykonywać {\tt play kube}
 		\item Mechanizm {\em socket activation} w połączeniu z kontenerami
 	\end{itemize}
@@ -225,7 +249,6 @@
 	\frametitle{Kompatybilność wsteczna z Docker}
 	\begin{itemize}
 		\item Paczka {\tt podman-docker} dostarcza polecenie {\tt docker}
-%\footnote{Zazwyczaj\ldots}
 		\item {\tt podman} nie stara się implementować API Dockera (brak {\tt docker.sock}), jest oparty o własną bibliotekę {\tt libpod}
 	\end{itemize}
 \centering
@@ -246,15 +269,24 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 \end{frame}
 
 \begin{frame}[fragile]
-	\frametitle{Budowanie kontenera za pomocą {\tt buildah}}
-%\lstinputlisting[style=bash]{../buildah-example/build-container.sh}
+	\frametitle{Przykład: bc-as-a-service (build)}
 \begin{itemize}
+	\item Dramat plików {\tt Dockerfile}
+	\item {\tt buildah} -- nowe narzędzie do budowania obrazów kontenerów
 	\item Powłoka językiem skryptowania do budowy kontenerów
-	\item {\tt mkdir -p \$HOME/tmp/logs}
-	\item {\tt sudo chcon -t container\_file\_t \$HOME/tmp/logs}
-	\item {\tt podman run -p 7777:7777 -v \$HOME/tmp/logs/:/logs/ localhost/bcaas}
-	\item {\tt -p} dla nieuprzywilejowanych kontenerów -- libpod issue \href{https://github.com/containers/libpod/issues/2081}{2081}
 \end{itemize}
+\lstinputlisting[style=bash]{../buildah-example/build-container.sh}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Przykład: bc-as-a-service (uruchomienie)}
+	\begin{itemize}
+		\item {\tt ./build-container.sh}
+		\item {\tt mkdir -p \$HOME/tmp/logs}
+		\item {\tt sudo chcon -t container\_file\_t \$HOME/tmp/logs}
+		\item {\tt podman run -p 7777:7777 -v \$HOME/tmp/logs/:/logs/ localhost/bcaas}
+		\item {\tt -p} dla nieuprzywilejowanych kontenerów -- libpod issue \href{https://github.com/containers/libpod/issues/2081}{2081}
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -276,23 +308,24 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 \begin{itemize}
 	\item Usługi, języki programowania i frameworki dostępne w alternatywnych wersjach
 	\item Np. PostgreSQL 9.6 oraz 10
-	\item Np. MariaDB 10.3 oraz MySQL 8
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{YUM v4 (dnf)}
-\begin{itemize}
 	\item {\tt dnf module enable postgresql:10}
 	\item {\tt dnf module install postgresql:10}
 \end{itemize}
-%\lstinputlisting[style=yaml]{../ansible/deploy-modular-postgresql.yml}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Skopeo}
 	\begin{itemize}
-		\item foo
+		\item {\tt skopeo copy source-image destination-image}
+		\item Phew, that was hard
+		\item Obsługiwane transporty, m.in.:
+		\begin{itemize}
+			\item {\tt container-storage:}
+			\item {\tt dir:}
+			\item {\tt docker://}, {\tt docker-archive:}, {\tt docker-daemon}
+			\item {\tt oci:}
+			\item {\tt ostree:}
+		\end{itemize}
 	\end{itemize}
 \end{frame}
 
@@ -301,15 +334,32 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 	\begin{itemize}
 		\item {\tt udica} -- generator polityki SELinuxa dla kontenerów (Fedora już, RHEL 8.1+)
 		\item cockpit-podman (Fedora już, RHEL 8.x)
-		\item ...
+		\item toolbox -- \url{https://github.com/containers/toolbox}
+		\item \ldots 
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{UBI}
+	\frametitle{Universal Base Images}
 	\begin{itemize}
-		\item Foo
+		\item Oficjalne, darmowe obrazy RHEL do budowy własnych skonteneryzowanych aplikacji
+		\item {\tt podman pull registry.access.redhat.com/ubi8/ubi\{,-init,-minimal\}} 
 		\item {\tt podman run --rm -it ubi8/ubi /usr/bin/cat /etc/redhat-release}
+	\end{itemize}
+	\begin{center}
+		\includegraphics[scale=0.25]{img-ubiupdates.png}
+	\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Co z Ansible?}
+	\begin{itemize}
+		\item Pomysł -- Ansible jako silnik automatyzacji dla kontenerów
+		\begin{itemize}
+			\item Budowanie obrazów -- {\tt ansible-container}, {\tt ansible-bender}
+			\item Zarządzanie kontenerami na hostach -- {\tt ansible-podman}, moduły {\tt k8s}
+			\item Tworzenie skomplikowanych {\it pipelines} z kontenerami
+		\end{itemize}
 	\end{itemize}
 \end{frame}
 
@@ -331,17 +381,6 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 
 % varlink
 
-\begin{frame}[fragile]
-	\frametitle{Co z Ansible?}
-	\begin{itemize}
-		\item Pomysł -- Ansible jako silnik automatyzacji
-		\begin{itemize}
-			\item Budowanie obrazów kontenerów -- {\tt ansible-container}, {\tt ansible-bender}
-			\item Zarządzanie kontenerami na hostach
-			\item Tworzenie skomplikowanych {\it pipelines} z kontenerami
-		\end{itemize}
-	\end{itemize}
-\end{frame}
 % {\tt ansible-bender}}
 %\begin{center}
 %\includegraphics[scale=0.13]{img-ansibleinception.jpg}
@@ -350,12 +389,12 @@ docker & rhel 8 compat & rhel 8 native   \\ \hline
 
 \begin{frame}[fragile]
 	\frametitle{Instalacja {\tt ansible-bender}}
-%\lstinputlisting[style=yaml,firstline=11]{../ansible/deploy-ansible-bender.yml}
+	\lstinputlisting[style=yaml,firstline=11]{../ansible/deploy-ansible-bender.yml}
 \end{frame}
 
 \begin{frame}[fragile]
 	\frametitle{Tworzenie obrazów kontenerów z {\tt ansible-bender}}
-%\lstinputlisting[style=yaml]{../ansible/container-provisioning.yml}
+	\lstinputlisting[style=yaml]{../ansible/container-provisioning.yml}
 \end{frame}
 
 \begin{frame}
