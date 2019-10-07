@@ -2,7 +2,7 @@
 - hosts: all
   vars:
     ansible_bender:
-      base_image: registry.access.redhat.com/ubi8/ubi
+      base_image: registry.fedoraproject.org/fedora:31
 
       target_image:
         name: myimage
